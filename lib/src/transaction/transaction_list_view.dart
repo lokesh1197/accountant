@@ -22,9 +22,11 @@ class TransactionListView extends StatefulWidget {
         .where((line) => line.isEmpty || line[0] != ';')
         .join('\n');
     for (String partData in data.split('\n\n')) {
-      Transaction transaction = Transaction.parse(partData);
-      if (transaction.isValid) {
-        transactions.add(Transaction.parse(partData));
+      try {
+        Transaction transaction = Transaction.parseString(partData);
+        transactions.add(transaction);
+      } catch (e) {
+        debugPrint('Error: ' + e.toString());
       }
     }
     // (() async {
@@ -82,11 +84,12 @@ class TransactionListViewState extends State<TransactionListView> {
                 fit: FlexFit.tight,
                 child: OutlinedButton(
                   onPressed: () => {
-                    Navigator.restorablePushNamed(
+                    Navigator.push(
                       context,
-                      TransactionEditView.routeName,
-                      arguments: transaction.toString(),
-                    )
+                      MaterialPageRoute(
+                        builder: (context) => TransactionEditView(transaction: transaction),
+                      ),
+                    ),
                   },
                   child: Text(
                     transaction.payee,
@@ -104,19 +107,6 @@ class TransactionListViewState extends State<TransactionListView> {
               ),
             ],
           );
-
-          // return ListTile(
-          //     title: Text(transaction.date + ' ' + transaction.title),
-          //     // leading: const CircleAvatar(
-          //     //   foregroundImage: AssetImage('assets/images/flutter_logo.png'),
-          //     // ),
-          //     onTap: () {
-          //       Navigator.restorablePushNamed(
-          //         context,
-          //         TransactionEditView.routeName,
-          //         arguments: transaction.data,
-          //       );
-          //     });
         },
       ),
       floatingActionButton: FloatingActionButton(

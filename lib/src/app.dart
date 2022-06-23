@@ -73,9 +73,9 @@ class App extends StatelessWidget {
                 switch (routeSettings.name) {
                   case SettingsView.routeName:
                     return SettingsView(controller: settingsController);
-                  case TransactionEditView.routeName:
-                    final args = routeSettings.arguments as String;
-                    return TransactionEditView(data: args);
+                  // case TransactionEditView.routeName:
+                  //   final args = routeSettings.arguments as String;
+                  //   return TransactionEditView(data: args);
                   case TransactionListView.routeName:
                     final args = routeSettings.arguments as String;
                     return TransactionListView(filePath: args);

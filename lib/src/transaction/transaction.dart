@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:intl/intl.dart';
 
 class Statement {
@@ -7,29 +5,37 @@ class Statement {
   final double amount;
   final String currency;
   final bool isComment;
+  final String comment;
 
   // TODO: make is user configurable
   int maxLength = 80;
 
-  Statement(this.account, this.amount, this.currency, {this.isComment = false});
+  Statement(this.account, this.amount, this.currency,
+      {this.isComment = false, this.comment = ''});
 
   static Statement parseString(String line) {
+    line = line.trim();
     if (line[0] == ';') {
-      return Statement('', 0, '', isComment: true);
+      return Statement('', 0, '', isComment: true, comment: line);
     }
-    List<String> params = line.split(' ');
+    List<String> params = line.split(RegExp('\\s+'));
     return Statement(params[0], double.parse(params[1]), params[2]);
   }
 
   @override
   String toString() {
+    if (isComment) return comment;
+
     // TODO: consider case when tabLength is non-positive
     int noOfSpaces = maxLength -
-        (account.length + amount.toString().length + 1 + currency.length);
+        (account.length +
+            amount.toStringAsFixed(2).length +
+            1 +
+            currency.length);
     return [
       account,
-      List.filled(noOfSpaces, ' '),
-      amount.toString(),
+      List.filled(noOfSpaces, ' ').join(),
+      amount.toStringAsFixed(2),
       ' ',
       currency
     ].join();
@@ -50,12 +56,11 @@ class Transaction {
     this.payee,
     this.statements,
     this.value, {
-    // TODO: make is user configurable
+    // TODO: make it user configurable
     this.dateFormat = 'yyyy/MM/dd',
   });
 
   static Transaction parseString(String data) {
-    log('Transaction - ' + data);
     List<String> lines = [];
     for (String line in data.split('\n')) {
       lines.add(line);
@@ -76,8 +81,9 @@ class Transaction {
     Iterable<Statement> statements = lines.sublist(1).map((line) {
       return Statement.parseString(line);
     });
-    double value =
-        statements.fold(0, (p, c) => p + (c.amount > 0 ? c.amount : 0));
+    double value = statements.fold(0, (p, c) => p + (c.amount > 0 ? c.amount : 0));
+    // double value = 0;
+
     return Transaction(
       date,
       payee,
@@ -88,7 +94,8 @@ class Transaction {
 
   @override
   String toString() {
-    return [getDate() + ' ' + payee, ...statements.map((s) => s.toString())].join('\n');
+    return [getDate() + ' ' + payee, ...statements.map((s) => s.toString())]
+        .join('\n');
   }
 
   // static Transaction parseJson() {}

@@ -3,7 +3,6 @@ import 'dart:io' show Directory, File;
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
-import '../settings/settings_view.dart';
 import 'record.dart';
 import 'record_edit_view.dart';
 import '../transaction/transaction_list_view.dart';

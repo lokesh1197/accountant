@@ -4,10 +4,10 @@ import 'transaction.dart';
 
 /// Edit view for a transaction
 class TransactionEditView extends StatelessWidget {
-  final String data;
+  final Transaction transaction;
   // Transaction? transaction;
 
-  TransactionEditView({Key? key, required this.data}) : super(key: key) {
+  TransactionEditView({Key? key, required this.transaction}) : super(key: key) {
     // transaction = Transaction(data);
     // debugPrint(transaction?.title);
   }
@@ -18,10 +18,10 @@ class TransactionEditView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(data),
+        title: Text(transaction.payee),
       ),
-      body: const Center(
-        child: Text('More Information Here'),
+      body: Center(
+        child: Text(transaction.toString()),
       ),
     );
   }
