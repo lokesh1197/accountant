@@ -42,6 +42,8 @@ class TransactionListView extends StatefulWidget {
 }
 
 class TransactionListViewState extends State<TransactionListView> {
+  int selectedTransactionIndex = -1;
+
   Future<void> _editDate(BuildContext context, int index) async {
     DateTime initialDate = widget.transactions[index].date;
     final DateTime? picked = await showDatePicker(
@@ -56,6 +58,71 @@ class TransactionListViewState extends State<TransactionListView> {
     }
   }
 
+  void _selectTransaction(int index) {
+    setState(() {
+      if (selectedTransactionIndex == index) {
+        selectedTransactionIndex = -1;
+      } else {
+        selectedTransactionIndex = index;
+      }
+    });
+  }
+
+  // on press: toggle details
+  // on long press: go to edit view
+  transactionView(transaction, index) {
+    int a = 255;
+    int r = transaction.value <= 0 ? 255 : 0;
+    int g = transaction.value >= 0 ? 255 : 0;
+    int b = 0;
+
+    Row mainRow = Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          OutlinedButton(
+            onPressed: () => _editDate(context, index),
+            child: Text(transaction.getDate()),
+          ),
+          const SizedBox(width: 10),
+          Flexible(
+            fit: FlexFit.tight,
+            child: OutlinedButton(
+              onLongPress: () => {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        TransactionEditView(transaction: transaction),
+                  ),
+                ),
+              },
+              onPressed: () => {_selectTransaction(index)},
+              child: Text(
+                transaction.payee,
+                textAlign: TextAlign.left,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          OutlinedButton(
+            onPressed: () => {},
+            child: Text(
+              transaction.value.toString(),
+              style: TextStyle(color: Color.fromARGB(a, r, g, b)),
+            ),
+          ),
+        ]);
+    Row detailsRow = Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [Text(transaction.toString())]);
+
+    if (index == selectedTransactionIndex) {
+      return <Widget>[mainRow, detailsRow];
+    } else {
+      return <Widget>[mainRow];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,44 +134,17 @@ class TransactionListViewState extends State<TransactionListView> {
         itemCount: widget.transactions.length,
         itemBuilder: (BuildContext context, int index) {
           final transaction = widget.transactions[index];
-          int a = 255;
-          int r = transaction.value <= 0 ? 255 : 0;
-          int g = transaction.value >= 0 ? 255 : 0;
-          int b = 0;
 
           return Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              OutlinedButton(
-                onPressed: () => _editDate(context, index),
-                child: Text(transaction.getDate()),
-              ),
-              const SizedBox(width: 10),
-              Flexible(
-                fit: FlexFit.tight,
-                child: OutlinedButton(
-                  onPressed: () => {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TransactionEditView(transaction: transaction),
-                      ),
-                    ),
-                  },
-                  child: Text(
-                    transaction.payee,
-                    textAlign: TextAlign.left,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton(
-                onPressed: () => {},
-                child: Text(
-                  transaction.value.toString(),
-                  style: TextStyle(color: Color.fromARGB(a, r, g, b)),
-                ),
-              ),
+            // mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: transactionView(transaction, index)))),
             ],
           );
         },
