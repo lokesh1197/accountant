@@ -2,7 +2,7 @@ import 'package:intl/intl.dart';
 
 class Statement {
   final String account;
-  final double amount;
+  final String amount;
   final String currency;
   final bool isComment;
   final String comment;
@@ -16,10 +16,10 @@ class Statement {
   static Statement parseString(String line) {
     line = line.trim();
     if (line[0] == ';') {
-      return Statement('', 0, '', isComment: true, comment: line);
+      return Statement('', '0.00', '', isComment: true, comment: line);
     }
     List<String> params = line.split(RegExp('\\s+'));
-    return Statement(params[0], double.parse(params[1]), params[2]);
+    return Statement(params[0], params[1], params[2]);
   }
 
   @override
@@ -27,18 +27,10 @@ class Statement {
     if (isComment) return comment;
 
     // TODO: consider case when tabLength is non-positive
-    int noOfSpaces = maxLength -
-        (account.length +
-            amount.toStringAsFixed(2).length +
-            1 +
-            currency.length);
-    return [
-      account,
-      List.filled(noOfSpaces, ' ').join(),
-      amount.toStringAsFixed(2),
-      ' ',
-      currency
-    ].join();
+    int noOfSpaces =
+        maxLength - (account.length + amount.length + 1 + currency.length);
+    return [account, List.filled(noOfSpaces, ' ').join(), amount, ' ', currency]
+        .join();
   }
 }
 
@@ -49,7 +41,7 @@ class Transaction {
   final DateTime date;
   final String payee;
   final Iterable<Statement> statements;
-  final double value;
+  final String value;
 
   Transaction(
     this.date,
@@ -81,7 +73,16 @@ class Transaction {
     Iterable<Statement> statements = lines.sublist(1).map((line) {
       return Statement.parseString(line);
     });
-    double value = statements.fold(0, (p, c) => p + (c.amount > 0 ? c.amount : 0));
+    String value = statements
+        .map((s) {
+          double? parsedValue = double.tryParse(s.amount);
+          return parsedValue.runtimeType == double ? parsedValue : 0;
+        })
+        .where((amount) {
+          return amount != null && amount > 0;
+        })
+        .fold(0, (p, c) => p + c > 0 ? c : 0)
+        .toString();
     // double value = 0;
 
     return Transaction(
